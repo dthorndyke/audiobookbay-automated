@@ -13,6 +13,20 @@ load_dotenv()
 
 ABB_HOSTNAME = os.getenv("ABB_HOSTNAME", "audiobookbay.lu")
 
+# Proxy configuration for external requests
+PROXY_IP = os.getenv("PROXY_IP")
+
+# Configure proxy dict for requests library
+proxies = None
+if PROXY_IP:
+    proxies = {
+        'http': f'http://{PROXY_IP}',
+        'https': f'http://{PROXY_IP}'  # Adjust to https:// if using HTTPS proxy
+    }
+    print(f"PROXY_IP: {PROXY_IP} (for external AudiobookBay requests)")
+else:
+    print("PROXY_IP: Not configured - external requests will go direct")
+
 PAGE_LIMIT = int(os.getenv("PAGE_LIMIT", 5))
 
 DOWNLOAD_CLIENT = os.getenv("DOWNLOAD_CLIENT")
@@ -52,6 +66,7 @@ print(f"SAVE_PATH_BASE: {SAVE_PATH_BASE}")
 print(f"NAV_LINK_NAME: {NAV_LINK_NAME}")
 print(f"NAV_LINK_URL: {NAV_LINK_URL}")
 print(f"PAGE_LIMIT: {PAGE_LIMIT}")
+print(f"PROXY_IP: {PROXY_IP if PROXY_IP else 'Not configured'}")
 
 
 @app.context_processor
@@ -71,7 +86,7 @@ def search_audiobookbay(query, max_pages=PAGE_LIMIT):
     results = []
     for page in range(1, max_pages + 1):
         url = f"https://{ABB_HOSTNAME}/page/{page}/?s={query.replace(' ', '+')}&cat=undefined%2Cundefined"
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, proxies=proxies, timeout=30)
         if response.status_code != 200:
             print(f"[ERROR] Failed to fetch page {page}. Status Code: {response.status_code}")
             break
@@ -94,7 +109,7 @@ def extract_magnet_link(details_url):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
     }
     try:
-        response = requests.get(details_url, headers=headers)
+        response = requests.get(details_url, headers=headers, proxies=proxies, timeout=30)
         if response.status_code != 200:
             print(f"[ERROR] Failed to fetch details page. Status Code: {response.status_code}")
             return None

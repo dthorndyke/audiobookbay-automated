@@ -1,6 +1,8 @@
 
 # AudiobookBay Automated
 
+> **Fork Notice**: This repository is a fork of [jamesry96/audiobookbay-automated](https://github.com/jamesry96/audiobookbay-automated) with added support for proxy configuration to route external AudiobookBay requests through a proxy server.
+
 AudiobookBay Automated is a lightweight web application designed to simplify audiobook management. It allows users to search [**AudioBook Bay**](https://audiobookbay.lu/) for audiobooks and send magnet links directly to a designated **Deludge, qBittorrent or Transmission** client.
 
 ## How It Works
@@ -49,6 +51,7 @@ DL_CATEGORY=abb-downloader     # torrent category for downloads
 SAVE_PATH_BASE=/audiobooks     # Root path for audiobook downloads (relative to torrent)
 ABB_HOSTNAME='audiobookbay.is' # Default
 PAGE_LIMIT=5                   # Defaults to 5 if not set, more than this may probably rate limit.
+PROXY_IP=192.168.1.100:8080   # Optional: Proxy for external AudiobookBay requests
 ```
 The following optional variables add an additional entry to the navigation bar. This is useful for linking to your audiobook player or another related service:
 
@@ -66,7 +69,7 @@ NAV_LINK_URL=https://audiobooks.yourdomain.com/
 
    services:
      audiobookbay-downloader:
-       image: ghcr.io/jamesry96/audiobookbay-automated:latest
+       image: ghcr.io/dthorndyke/audiobookbay-automated:latest
        ports:
          - "5078:5078"
        container_name: audiobookbay-downloader
@@ -80,6 +83,7 @@ NAV_LINK_URL=https://audiobooks.yourdomain.com/
          - DL_CATEGORY=abb-downloader
          - SAVE_PATH_BASE=/audiobooks
          - ABB_HOSTNAME='audiobookbay.is' #Default
+         - PROXY_IP=192.168.1.100:8080 #Optional
          - NAV_LINK_NAME=Open Audiobook Player #Optional
          - NAV_LINK_URL=https://audiobooks.yourdomain.com/ #Optional
    ```
@@ -111,6 +115,9 @@ NAV_LINK_URL=https://audiobooks.yourdomain.com/
     ABB_HOSTNAME='audiobookbay.is' #Default
     # ABB_HOSTNAME='audiobookbay.lu' #Alternative
 
+    # Proxy Configuration (Optional)
+    PROXY_IP=192.168.1.100:8080
+
     # Optional Navigation Bar Entry
     NAV_LINK_NAME=Open Audiobook Player
     NAV_LINK_URL=https://audiobooks.yourdomain.com/
@@ -120,6 +127,35 @@ NAV_LINK_URL=https://audiobooks.yourdomain.com/
    ```bash
    python app.py
    ```
+
+---
+
+## Proxy Configuration
+
+The app supports routing external AudiobookBay requests through a proxy server. This is useful for:
+- Privacy and anonymity
+- Bypassing geographic restrictions
+- Network security requirements
+
+### Configuration
+
+Set the `PROXY_IP` environment variable with your proxy address:
+
+```env
+PROXY_IP=192.168.1.100:8080
+```
+
+### Supported Proxy Types
+
+- **HTTP Proxy**: `PROXY_IP=192.168.1.100:8080` (default)
+- **HTTPS Proxy**: `PROXY_IP=192.168.1.100:8443` 
+- **Authenticated Proxy**: `PROXY_IP=username:password@192.168.1.100:8080`
+
+### Important Notes
+
+- **External requests only**: The proxy is used exclusively for scraping AudiobookBay. Download client API requests (qBittorrent/Transmission/Deluge) continue to use your local network.
+- **Required proxy**: If configured, all external requests MUST go through the proxy. If the proxy is unavailable, requests will fail (no automatic fallback to direct connection).
+- **Optional**: If `PROXY_IP` is not set, the app works normally with direct connections.
 
 ---
 

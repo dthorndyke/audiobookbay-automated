@@ -2,11 +2,12 @@ version: '3.8'
 
 services:
   audiobookbay-automated:
-    image: ghcr.io/jamesry96/audiobookbay-automated:latest
+    image: ghcr.io/dthorndyke/audiobookbay-automated:latest
     ports:
       - "5078:5078"
     container_name: audiobookbay-automated
     environment:
+      - PROXY_IP=${PROXY_IP}
       - DOWNLOAD_CLIENT=${DOWNLOAD_CLIENT}
       - DL_HOST=${DL_HOST}
       - DL_PORT=${DL_PORT}
